@@ -45,6 +45,5 @@
 
 % 5 - from the plane parameters deduce the relative rotation and translation between the cameras
 
-    angle = acosd(dot(n1,n2));
-    angle = min(angle, 180 - angle);
+    angle = acosd(dot(n1,n2));    
     disp(['The angle between the planes is: ', num2str(angle)]);
