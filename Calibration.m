@@ -26,24 +26,37 @@
 
     upperLeftCorner1 = struct('x', 170, 'y', 183);
     lowerRightCorner1 = struct('x', 277, 'y', 347);
-    [rows, columns] = meshgrid( upperLeftCorner1.x : lowerRightCorner1.x, upperLeftCorner1.y : lowerRightCorner1.y);
+    [columns, rows] = meshgrid( upperLeftCorner1.x : lowerRightCorner1.x, upperLeftCorner1.y : lowerRightCorner1.y);
     plane1 = pointCloud1.select(rows(:), columns(:));
-    plane1 = plane1.select(plane1.findPointsInROI(roi));
+%     plane1 = plane1.select(plane1.findPointsInROI(roi));
     
     upperLeftCorner2 = struct('x', 139, 'y', 212);
     lowerRightCorner2 = struct('x', 257, 'y', 367);
-    [rows, columns] = meshgrid( upperLeftCorner2.x : lowerRightCorner2.x, upperLeftCorner2.y : lowerRightCorner2.y);
+    [columns, rows] = meshgrid( upperLeftCorner2.x : lowerRightCorner2.x, upperLeftCorner2.y : lowerRightCorner2.y);
     plane2 = pointCloud2.select(rows(:), columns(:));
-    plane2 = plane2.select(plane2.findPointsInROI(roi));
+%     plane2 = plane2.select(plane2.findPointsInROI(roi));
     
     showPointCloud(plane1); hold on;
     showPointCloud(plane2);
+    
 % 4 - perform regresison to obtain the plane parameters
 
     [n1,V1,p1] = affine_fit(plane1.Location);
     [n2,V2,p2] = affine_fit(plane2.Location);
 
-% 5 - from the plane parameters deduce the relative rotation and translation between the cameras
+% 5 - from the plane parameters deduce the relative rotation between the cameras
 
     angle = acosd(dot(n1,n2));    
-    disp(['The angle between the planes is: ', num2str(angle)]);
+    disp(['The angle between the cameras is: ', num2str(angle)]);
+    
+% 6 - Use a corner of the board to determine the relative translation
+
+    upperRightCorner1 = struct('x', 281, 'y', 179);
+    upperRightCorner2 = struct('x', 279, 'y', 183);
+    
+    xyz1 = pointCloud1.select(upperRightCorner1.y, upperRightCorner1.x);
+    xyz2 = pointCloud2.select(upperRightCorner2.y, upperRightCorner2.x);
+    
+    R = vrrotvec2mat([cross(n1,n2); deg2rad(angle)]);
+    
+    disp(['The distance between the planes is: ', num2str((xyz2.Location' - R*xyz1.Location')'), ' [m]']);
